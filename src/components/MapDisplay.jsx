@@ -1,15 +1,33 @@
 ﻿import React, { useEffect, useState } from "react";
 
 const MapDisplay = ({ reloadKey, streamActive }) => {
-    const [mapUrl, setMapUrl] = useState(`${window.location.origin}/static/map/no_video.png`);
+    const [mapData, setMapData] = useState(null);
+    const [intervalId, setIntervalId] = useState(null);
 
     useEffect(() => {
+        let polling;
+
+        const fetchMap = async () => {
+            try {
+                const res = await fetch("http://localhost:8000/api/camera/map");
+                const data = await res.json();
+                setMapData(`data:image/png;base64,${data.image}`);
+            } catch (error) {
+                console.error("Lỗi khi lấy ảnh map:", error);
+                setMapData(null);
+            }
+        };
+
         if (streamActive) {
-            const timestamp = Date.now();
-            setMapUrl(`${window.location.origin}/static/map/2d_map.png?${timestamp}`);
+            fetchMap(); // fetch ngay lần đầu tiên
+            polling = setInterval(fetchMap, 1000);
+            setIntervalId(polling);
         } else {
-            setMapUrl(`${window.location.origin}/static/map/no_video.png`);
+            clearInterval(intervalId);
+            setMapData(`/static/map/no_video.png?${Date.now()}`);
         }
+
+        return () => clearInterval(polling);
     }, [streamActive, reloadKey]);
 
     return (
@@ -17,12 +35,9 @@ const MapDisplay = ({ reloadKey, streamActive }) => {
             <h2 className="text-base font-semibold mb-2 text-center">Bản đồ vị trí 2D</h2>
             <div className="w-full h-auto">
                 <img
-                    src={mapUrl}
+                    src={mapData || "/static/map/no_video.png"}
                     alt="2D Map"
                     className="w-full h-auto rounded border"
-                    onError={() =>
-                        setMapUrl(`${window.location.origin}/static/map/no_video.png`)
-                    }
                 />
             </div>
         </div>
