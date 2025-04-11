@@ -38,7 +38,7 @@ const CameraStream = ({ onTriggerReload, onStreamStateChange }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <h3 className="text-md font-semibold mb-2">Video phát hiện</h3>
-                        <WebSocketStream key={reloadKey} camId={camId} />
+                        <WebSocketStream key={reloadKey} camId={camId} onStreamStateChange={onStreamStateChange} />
                     </div>
                 </div>
             )}
