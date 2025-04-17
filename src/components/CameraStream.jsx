@@ -1,7 +1,7 @@
 ﻿import React, { useState } from "react";
 import WebSocketStream from "./WebSocketStream";
 
-const CameraStream = ({ onTriggerReload, onStreamStateChange }) => {
+const CameraStream = ({ onTriggerReload, onStreamStateChange, onCameraChange }) => {
     const [camId, setCamId] = useState(null);
     const [reloadKey, setReloadKey] = useState(Date.now());
 
@@ -12,6 +12,7 @@ const CameraStream = ({ onTriggerReload, onStreamStateChange }) => {
             setReloadKey(Date.now());
             if (onTriggerReload) onTriggerReload();
             if (onStreamStateChange) onStreamStateChange(true);
+            if (onCameraChange) onCameraChange(id); // 🔄 Đồng bộ map
         } catch (err) {
             console.error("Lỗi khi gọi API detect", err);
         }
