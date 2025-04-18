@@ -1,18 +1,19 @@
 ﻿import React, { useState } from "react";
 import WebSocketStream from "./WebSocketStream";
 
-const CameraStream = ({ onTriggerReload, onStreamStateChange, onCameraChange }) => {
+const CameraStream = ({ onTriggerReload, onStreamStateChange, onCameraChange, onWarningChange }) => {
     const [camId, setCamId] = useState(null);
     const [reloadKey, setReloadKey] = useState(Date.now());
+    const [warning, setWarning] = useState(false);
 
     const handleClick = async (id) => {
         try {
             await fetch(`http://localhost:8000/api/camera/detect?cam_id=${id}`);
             setCamId(id);
             setReloadKey(Date.now());
-            if (onTriggerReload) onTriggerReload();
-            if (onStreamStateChange) onStreamStateChange(true);
-            if (onCameraChange) onCameraChange(id); // 🔄 Đồng bộ map
+            onTriggerReload?.();
+            onStreamStateChange?.(true);
+            onCameraChange?.(id);
         } catch (err) {
             console.error("Lỗi khi gọi API detect", err);
         }
@@ -20,6 +21,7 @@ const CameraStream = ({ onTriggerReload, onStreamStateChange, onCameraChange }) 
 
     return (
         <div>
+            {/* Chọn camera */}
             <div className="mb-4">
                 <label className="font-semibold mr-2">
                     {camId ? `CAMERA ${camId}` : "Chọn Camera để bắt đầu"}
@@ -36,10 +38,30 @@ const CameraStream = ({ onTriggerReload, onStreamStateChange, onCameraChange }) 
             </div>
 
             {camId && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <h3 className="text-md font-semibold mb-2">Video phát hiện</h3>
-                        <WebSocketStream key={reloadKey} camId={camId} onStreamStateChange={onStreamStateChange} />
+                <div>
+                    {/* Cảnh báo popup */}
+                    {warning && (
+                        <div className="text-center mb-3 text-red-600 font-bold text-lg animate-bounce">
+                            ⚠️ WARNING: Person in Machinery!
+                        </div>
+                    )}
+
+                    <h3 className="text-md font-semibold mb-2">Video phát hiện</h3>
+
+                    {/* 🔴 Viền video */}
+                    <div
+                        className={`rounded-xl overflow-hidden transition-all duration-300 border-4 ${warning ? 'border-red-600 animate-pulse' : 'border-gray-300'
+                            }`}
+                    >
+                        <WebSocketStream
+                            key={reloadKey}
+                            camId={camId}
+                            onStreamStateChange={onStreamStateChange}
+                            onWarningChange={(val) => {
+                                setWarning(val);
+                                onWarningChange?.(val);
+                            }}
+                        />
                     </div>
                 </div>
             )}

@@ -7,17 +7,15 @@ import ViolationSidebar from "./components/ViolationSidebar";
 const App = () => {
     const [reloadKey, setReloadKey] = useState(Date.now());
     const [streamRunning, setStreamRunning] = useState(false);
-    const [selectedCamera, setSelectedCamera] = useState(1); // default cam 1
+    const [selectedCamera, setSelectedCamera] = useState(1);
+    const [warning, setWarning] = useState(false); // ⚠️ cảnh báo toàn app
 
     return (
         <div className="flex flex-row min-h-screen p-4 gap-4 bg-gray-100">
-            {/* BÊN TRÁI: Map + Stats + Camera */}
+            {/* BÊN TRÁI */}
             <div className="w-2/3 flex flex-col gap-4">
                 <div className="bg-white rounded-2xl shadow-md p-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <h2 className="text-xl font-semibold">MAP</h2>
-                    </div>
-
+                    <h2 className="text-xl font-semibold mb-2">MAP</h2>
                     <MapDisplay
                         reloadKey={reloadKey}
                         streamActive={streamRunning}
@@ -29,16 +27,19 @@ const App = () => {
                     <StatsDisplay running={streamRunning} />
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-md p-4">
+                {/* ⚠️ bọc khung camera bằng cảnh báo */}
+                <div className={`transition-all duration-300 border-4 rounded-2xl shadow-md p-4 ${warning ? 'border-red-600 bg-red-50 animate-pulse' : 'border-transparent bg-white'
+                    }`}>
                     <CameraStream
                         onTriggerReload={() => setReloadKey(Date.now())}
                         onStreamStateChange={(state) => setStreamRunning(state)}
                         onCameraChange={(id) => setSelectedCamera(id)}
+                        onWarningChange={(value) => setWarning(value)} // ✅ truyền cảnh báo từ dưới lên
                     />
                 </div>
             </div>
 
-            {/* BÊN PHẢI: Lịch sử vi phạm */}
+            {/* BÊN PHẢI */}
             <div className="w-1/3 bg-white rounded-2xl shadow-md p-4 overflow-y-auto">
                 <ViolationSidebar />
             </div>
